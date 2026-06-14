@@ -21,7 +21,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTime, phoneDigits } from "@/lib/format";
+import {
+  formatDateTime,
+  formatPhoneDisplay,
+  toWhatsappE164,
+} from "@/lib/format";
 import type { Lead } from "@/lib/types";
 
 type SortKey = "createdAt" | "name" | "ticketQuantity";
@@ -34,8 +38,7 @@ const PAGE_SIZE = 500;
  * Brasil quando ausente) e uma mensagem inicial já preenchida.
  */
 function buildWhatsappUrl(lead: Lead): string {
-  let digits = phoneDigits(lead.whatsapp);
-  if (!digits.startsWith("55")) digits = `55${digits}`;
+  const digits = toWhatsappE164(lead.whatsapp);
 
   const firstName = lead.name.trim().split(" ")[0] || lead.name;
   const message = `Olá ${firstName}! Tudo bem? Sou da organização do ${lead.eventName} e estou entrando em contato sobre a sua inscrição.`;
@@ -44,10 +47,11 @@ function buildWhatsappUrl(lead: Lead): string {
 }
 
 function toCsv(leads: Lead[]): string {
-  const header = ["Nome", "WhatsApp", "Ingressos", "Data"];
+  const header = ["Nome", "WhatsApp", "WhatsApp (intl)", "Ingressos", "Data"];
   const rows = leads.map((l) => [
     l.name,
-    l.whatsapp,
+    formatPhoneDisplay(l.whatsapp),
+    toWhatsappE164(l.whatsapp),
     String(l.ticketQuantity),
     formatDateTime(l.createdAt),
   ]);
@@ -202,7 +206,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                 <TableRow key={lead.id}>
                   <TableCell className="font-medium">{lead.name}</TableCell>
                   <TableCell className="text-muted-foreground tabular-nums">
-                    {lead.whatsapp}
+                    {formatPhoneDisplay(lead.whatsapp)}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{lead.ticketQuantity}</Badge>

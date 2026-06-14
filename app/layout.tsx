@@ -18,10 +18,38 @@ const cinzel = Cinzel({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+const title = "Show de 10 anos da Elevatto";
+const description =
+  "Uma década de música, entrega e conexão. Garanta sua inscrição gratuita para o show de 10 anos da Elevatto.";
+
 export const metadata: Metadata = {
-  title: "Show de 10 anos da Elevatto",
-  description:
-    "Uma década de música, entrega e conexão. Garanta sua inscrição gratuita para o show de 10 anos da Elevatto.",
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: "/",
+    siteName: "Elevatto",
+    title,
+    description,
+    images: [
+      {
+        url: "/logo-footer.png",
+        width: 640,
+        height: 641,
+        alt: "Elevatto",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/logo-footer.png"],
+  },
 };
 
 export default function RootLayout({

@@ -66,6 +66,21 @@ export interface NewLeadInput {
   ticketQuantity: number;
 }
 
+/** Interessado na lista de espera (quando os ingressos esgotam). */
+export interface WaitlistEntry {
+  id: string;
+  name: string;
+  whatsapp: string;
+  eventName: string;
+  createdAt: string; // ISO 8601
+}
+
+/** Dados aceitos pelo formulário público da lista de espera. */
+export interface NewWaitlistInput {
+  name: string;
+  whatsapp: string;
+}
+
 /** Resultado de uma tentativa de inscrição. */
 export type CreateLeadResult =
   | { ok: true; lead: Lead; ticketsAvailable: number }

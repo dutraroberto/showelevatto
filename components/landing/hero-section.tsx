@@ -39,12 +39,17 @@ const item: Variants = {
 
 export function HeroSection({
   image = heroImage,
+  mobilePtClassName = "pt-[60vw]",
 }: {
   /** Pôster de fundo do hero (padrão: hero.png). */
   image?: StaticImageData;
+  /** Espaçamento superior no mobile (ajusta onde o texto começa sobre a arte). */
+  mobilePtClassName?: string;
 }) {
   return (
-    <section className="relative flex flex-col items-center overflow-hidden px-4 pt-[60vw] pb-20 text-center sm:min-h-svh sm:justify-end sm:pt-24">
+    <section
+      className={`relative flex flex-col items-center overflow-hidden px-4 ${mobilePtClassName} pb-20 text-center sm:min-h-svh sm:justify-end sm:pt-24`}
+    >
       {/* Pôster da banda como fundo, com zoom lento de abertura.
           No mobile a imagem aparece inteira no topo (sem corte); no sm+ cobre a seção. */}
       <motion.div

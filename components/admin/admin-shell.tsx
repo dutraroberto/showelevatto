@@ -20,6 +20,7 @@ import type { AdminUser } from "@/lib/types";
 const titles: Record<string, string> = {
   "/admin": "Visão geral",
   "/admin/inscricoes": "Inscrições",
+  "/admin/lista-espera": "Lista de espera",
   "/admin/configuracoes": "Configurações",
 };
 

@@ -11,7 +11,7 @@ import bannerImage from "@/public/banner-elevatto.png";
 export default function HomeV2() {
   return (
     <div className="bg-elevatto flex flex-1 flex-col">
-      <HeroSection image={bannerImage} />
+      <HeroSection image={bannerImage} mobilePtClassName="pt-[36vw]" />
       <EventInfo />
       <SectionDivider />
       <RegistrationSection trackPath="/v2" />

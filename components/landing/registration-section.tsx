@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { LeadForm } from "@/components/landing/lead-form";
+import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { ParticlesBackground } from "@/components/landing/particles-background";
 import { TicketAvailability } from "@/components/landing/ticket-availability";
 import { SuccessMessage } from "@/components/landing/success-message";
@@ -25,6 +26,9 @@ export function RegistrationSection({
     trackPageView(trackPath);
     getTicketsAvailable().then(setAvailable);
   }, [trackPath]);
+
+  const soldOut = available === 0;
+  const showWaitlist = soldOut && !registered;
 
   return (
     <section
@@ -52,12 +56,21 @@ export function RegistrationSection({
           className="mb-8 text-center"
         >
           <h2 className="font-heading text-3xl font-bold sm:text-4xl">
-            Garanta sua{" "}
-            <span className="text-gold-gradient">inscrição gratuita</span>
+            {showWaitlist ? (
+              <>
+                Ingressos <span className="text-gold-gradient">esgotados</span>
+              </>
+            ) : (
+              <>
+                Garanta sua{" "}
+                <span className="text-gold-gradient">inscrição gratuita</span>
+              </>
+            )}
           </h2>
           <p className="text-muted-foreground mt-3 text-balance">
-            Preencha seus dados para reservar seu lugar. A entrada é franca e
-            está sujeita à disponibilidade de ingressos.
+            {showWaitlist
+              ? "Todas as vagas foram preenchidas. Entre na lista de espera e avisamos pelo WhatsApp se novas vagas forem liberadas."
+              : "Preencha seus dados para reservar seu lugar. A entrada é franca e está sujeita à disponibilidade de ingressos."}
           </p>
         </motion.div>
 
@@ -76,6 +89,8 @@ export function RegistrationSection({
                   name={registered.name}
                   quantity={registered.ticketQuantity}
                 />
+              ) : showWaitlist ? (
+                <WaitlistForm />
               ) : (
                 <LeadForm
                   available={available}

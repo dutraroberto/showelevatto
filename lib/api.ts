@@ -6,6 +6,8 @@ import type {
   EventSettings,
   Lead,
   NewLeadInput,
+  NewWaitlistInput,
+  WaitlistEntry,
 } from "@/lib/types";
 
 // Camada de API real (Supabase). Mantém as mesmas assinaturas da camada
@@ -200,6 +202,43 @@ export async function createLead(
     lead: rowToLead(result.lead),
     ticketsAvailable: result.tickets_available,
   };
+}
+
+interface WaitlistRow {
+  id: string;
+  name: string;
+  whatsapp: string;
+  event_name: string;
+  created_at: string;
+}
+
+/** Entra na lista de espera (RPC pública; idempotente por número). */
+export async function joinWaitlist(input: NewWaitlistInput): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("join_waitlist", {
+    p_name: input.name,
+    p_whatsapp: input.whatsapp,
+  });
+
+  if (error) throw error;
+}
+
+/** Lista de espera, mais recentes primeiro (somente admins, via RLS). */
+export async function getWaitlist(): Promise<WaitlistEntry[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("event_waitlist")
+    .select("id, name, whatsapp, event_name, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data as WaitlistRow[]).map((row) => ({
+    id: row.id,
+    name: row.name,
+    whatsapp: row.whatsapp,
+    eventName: row.event_name,
+    createdAt: row.created_at,
+  }));
 }
 
 /** Soma de ingressos disponíveis (consumida pela landing). */

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ClockIcon,
   LayoutDashboardIcon,
   type LucideIcon,
   SettingsIcon,
@@ -38,6 +39,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { title: "Visão geral", href: "/admin", icon: LayoutDashboardIcon },
   { title: "Inscrições", href: "/admin/inscricoes", icon: UsersIcon },
+  { title: "Lista de espera", href: "/admin/lista-espera", icon: ClockIcon },
   {
     title: "Configurações",
     href: "/admin/configuracoes",
