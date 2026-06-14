@@ -5,6 +5,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   DownloadIcon,
+  MessageCircleIcon,
   SearchIcon,
   UsersIcon,
 } from "lucide-react";
@@ -20,13 +21,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTime } from "@/lib/format";
-import type { Lead } from "@/lib/mock/types";
+import { formatDateTime, phoneDigits } from "@/lib/format";
+import type { Lead } from "@/lib/types";
 
 type SortKey = "createdAt" | "name" | "ticketQuantity";
 type SortDir = "asc" | "desc";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 500;
+
+/**
+ * Monta o link wa.me com o número no formato internacional (prefixo 55 do
+ * Brasil quando ausente) e uma mensagem inicial já preenchida.
+ */
+function buildWhatsappUrl(lead: Lead): string {
+  let digits = phoneDigits(lead.whatsapp);
+  if (!digits.startsWith("55")) digits = `55${digits}`;
+
+  const firstName = lead.name.trim().split(" ")[0] || lead.name;
+  const message = `Olá ${firstName}! Tudo bem? Sou da organização do ${lead.eventName} e estou entrando em contato sobre a sua inscrição.`;
+
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
 
 function toCsv(leads: Lead[]): string {
   const header = ["Nome", "WhatsApp", "Ingressos", "Data"];
@@ -167,12 +182,13 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   Data <SortIcon k="createdAt" />
                 </button>
               </TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {pageRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-32 text-center">
+                <TableCell colSpan={5} className="h-32 text-center">
                   <div className="text-muted-foreground flex flex-col items-center gap-2">
                     <UsersIcon className="size-6 opacity-50" />
                     <span className="text-sm">
@@ -193,6 +209,23 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-right tabular-nums">
                     {formatDateTime(lead.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      render={
+                        <a
+                          href={buildWhatsappUrl(lead)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Falar com ${lead.name} no WhatsApp`}
+                        />
+                      }
+                    >
+                      <MessageCircleIcon />
+                      <span className="hidden sm:inline">WhatsApp</span>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

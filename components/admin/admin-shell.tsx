@@ -13,9 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/admin/app-sidebar";
-import { fakeSignOut, isAuthenticated } from "@/lib/auth";
-import { getCurrentUser } from "@/lib/mock/api";
-import type { AdminUser } from "@/lib/mock/types";
+import { signOut } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/api";
+import type { AdminUser } from "@/lib/types";
 
 const titles: Record<string, string> = {
   "/admin": "Visão geral",
@@ -29,19 +29,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
-  // Guard leve da Fase 1 (checagem da flag no client).
-  // TODO Fase 3: substituir por middleware + sessão real do Supabase.
+  // A rota já é protegida pelo proxy.ts (sessão Supabase); aqui só
+  // carregamos o perfil do admin para o sidebar.
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.replace("/admin/login");
-      return;
-    }
-    setAuthorized(true);
-    getCurrentUser().then(setUser);
+    getCurrentUser()
+      .then((current) => {
+        setUser(current);
+        setAuthorized(true);
+      })
+      .catch(() => {
+        router.replace("/admin/login");
+      });
   }, [router]);
 
-  function handleLogout() {
-    fakeSignOut();
+  async function handleLogout() {
+    await signOut();
     toast.success("Sessão encerrada");
     router.replace("/admin/login");
   }

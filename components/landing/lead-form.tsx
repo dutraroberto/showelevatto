@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { maskPhoneBR, phoneDigits } from "@/lib/format";
-import { createLead } from "@/lib/mock/api";
-import type { Lead } from "@/lib/mock/types";
+import { createLead } from "@/lib/api";
+import type { Lead } from "@/lib/types";
 
 const MAX_PER_LEAD = 4;
 

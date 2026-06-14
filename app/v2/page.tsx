@@ -6,14 +6,15 @@ import { RegistrationSection } from "@/components/landing/registration-section";
 import { SectionDivider } from "@/components/landing/section-divider";
 import rodapeImage from "@/public/rodape.png";
 import logoFooter from "@/public/logo-footer.png";
+import bannerImage from "@/public/banner-elevatto.png";
 
-export default function Home() {
+export default function HomeV2() {
   return (
     <div className="bg-elevatto flex flex-1 flex-col">
-      <HeroSection />
+      <HeroSection image={bannerImage} />
       <EventInfo />
       <SectionDivider />
-      <RegistrationSection />
+      <RegistrationSection trackPath="/v2" />
 
       <footer className="relative overflow-hidden px-4 pt-56 pb-12 text-center">
         {/* Multidão com brilho dourado fechando a página */}

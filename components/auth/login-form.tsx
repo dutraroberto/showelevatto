@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DEMO_CREDENTIALS, fakeSignIn } from "@/lib/auth";
+import { signIn } from "@/lib/auth";
 
 const loginSchema = z.object({
   email: z.email("Informe um e-mail válido."),
@@ -26,6 +26,40 @@ const loginSchema = z.object({
 });
 
 type LoginValues = z.infer<typeof loginSchema>;
+
+// Traduz o erro bruto do Supabase Auth para uma mensagem acionável. Sem isso,
+// causas distintas (provedor desativado, e-mail não confirmado) ficavam todas
+// escondidas atrás de um genérico "Credenciais inválidas".
+function describeAuthError(raw: string): {
+  title: string;
+  description: string;
+} {
+  const message = raw.toLowerCase();
+
+  if (message.includes("email logins are disabled")) {
+    return {
+      title: "Login por e-mail desativado",
+      description:
+        "Habilite o provedor de E-mail em Authentication → Sign In / Providers no painel do Supabase.",
+    };
+  }
+  if (message.includes("email not confirmed")) {
+    return {
+      title: "E-mail não confirmado",
+      description: "Confirme o e-mail da conta antes de acessar o painel.",
+    };
+  }
+  if (message.includes("invalid login credentials")) {
+    return {
+      title: "Credenciais inválidas",
+      description: "Verifique o e-mail e a senha e tente novamente.",
+    };
+  }
+  return {
+    title: "Não foi possível entrar",
+    description: raw || "Tente novamente em instantes.",
+  };
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -42,17 +76,13 @@ export function LoginForm() {
 
   async function onSubmit(values: LoginValues) {
     setSubmitting(true);
-    // Simula latência de rede do "login".
-    await new Promise((r) => setTimeout(r, 600));
 
-    // TODO Fase 3: trocar por Supabase Auth (signInWithPassword).
-    const ok = fakeSignIn(values.email, values.password);
+    const result = await signIn(values.email, values.password);
 
-    if (!ok) {
+    if (!result.ok) {
       setSubmitting(false);
-      toast.error("Credenciais inválidas", {
-        description: "Verifique o e-mail e a senha e tente novamente.",
-      });
+      const { title, description } = describeAuthError(result.error);
+      toast.error(title, { description });
       return;
     }
 
@@ -120,12 +150,6 @@ export function LoginForm() {
             {submitting ? "Entrando..." : "Entrar"}
           </Button>
         </form>
-
-        <p className="text-muted-foreground mt-5 rounded-md border border-dashed border-primary/20 bg-primary/5 p-3 text-center text-xs">
-          <span className="text-foreground/80 font-medium">Acesso de teste</span>
-          <br />
-          {DEMO_CREDENTIALS.email} · {DEMO_CREDENTIALS.password}
-        </p>
       </CardContent>
     </Card>
   );

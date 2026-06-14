@@ -1,6 +1,5 @@
-// Tipos compartilhados entre o mock (Fases 1 e 2) e o backend real (Fase 3).
-// Mantenha estes contratos estáveis: na Fase 3 só trocamos a implementação
-// em `lib/mock/api.ts` por chamadas reais ao Supabase, sem mexer na UI.
+// Contratos compartilhados entre a UI e a camada de API (lib/api.ts).
+// Os tipos espelham as tabelas/RPCs do Supabase em camelCase.
 
 export const EVENT_NAME = "Show de 10 anos da Elevatto";
 export const TOTAL_TICKETS = 300;
@@ -27,9 +26,29 @@ export interface DashboardMetrics {
   totalTickets: number;
   ticketsAvailable: number;
   totalPageViews: number;
-  conversionRate: number; // 0..1 (inscrições ÷ acessos)
+  /** Sessões distintas (visitantes) que acessaram a landing. */
+  uniqueSessions: number;
+  conversionRate: number; // 0..1 (inscrições ÷ sessões únicas)
   /** Inscrições agrupadas por dia, em ordem cronológica. */
   leadsByDay: { date: string; leads: number; tickets: number }[];
+  /** Série diária combinada: inscrições, ingressos e acessos. */
+  activityByDay: {
+    date: string;
+    leads: number;
+    tickets: number;
+    views: number;
+  }[];
+  /** Quantas inscrições reservaram cada quantidade de ingressos. */
+  ticketDistribution: { quantity: number; count: number }[];
+}
+
+/** Configuração do evento (tabela event_settings) com reservas agregadas. */
+export interface EventSettings {
+  eventName: string;
+  totalTickets: number;
+  maxPerLead: number;
+  ticketsReserved: number;
+  ticketsAvailable: number;
 }
 
 export interface AdminUser {

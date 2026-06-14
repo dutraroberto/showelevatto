@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { motion, type Variants } from "framer-motion";
 import {
   CalendarDaysIcon,
@@ -37,13 +37,19 @@ const item: Variants = {
   },
 };
 
-export function HeroSection() {
+export function HeroSection({
+  image = heroImage,
+}: {
+  /** Pôster de fundo do hero (padrão: hero.png). */
+  image?: StaticImageData;
+}) {
   return (
-    <section className="relative flex min-h-svh flex-col items-center justify-end overflow-hidden px-4 pt-24 pb-20 text-center">
-      {/* Pôster da banda como fundo, com zoom lento de abertura */}
+    <section className="relative flex flex-col items-center overflow-hidden px-4 pt-[60vw] pb-20 text-center sm:min-h-svh sm:justify-end sm:pt-24">
+      {/* Pôster da banda como fundo, com zoom lento de abertura.
+          No mobile a imagem aparece inteira no topo (sem corte); no sm+ cobre a seção. */}
       <motion.div
         aria-hidden
-        className="absolute inset-0"
+        className="absolute inset-x-0 top-0 sm:inset-0"
         initial={{ scale: 1.12, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{
@@ -52,24 +58,25 @@ export function HeroSection() {
         }}
       >
         <Image
-          src={heroImage}
+          src={image}
           alt=""
-          fill
           priority
           placeholder="blur"
           sizes="100vw"
-          className="object-cover object-[50%_30%]"
+          className="h-auto w-full sm:h-full sm:object-cover sm:object-[50%_30%]"
         />
+        {/* Esmaece a borda inferior da imagem no mobile */}
+        <div className="from-background absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t to-transparent sm:hidden" />
       </motion.div>
 
-      {/* Overlays: topo livre para a arte; base escura para o conteúdo */}
+      {/* Overlays (sm+): topo livre para a arte; base escura para o conteúdo */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/35 to-background"
+        className="absolute inset-0 hidden bg-gradient-to-b from-black/30 via-black/35 to-background sm:block"
       />
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/85 via-black/45 to-transparent"
+        className="absolute inset-x-0 bottom-0 hidden h-3/5 bg-gradient-to-t from-black/85 via-black/45 to-transparent sm:block"
       />
       {/* Brilho dourado suave atrás do conteúdo */}
       <div

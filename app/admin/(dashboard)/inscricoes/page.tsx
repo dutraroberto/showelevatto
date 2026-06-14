@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 
 import { LeadsTable } from "@/components/admin/leads-table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getLeads } from "@/lib/mock/api";
-import type { Lead } from "@/lib/mock/types";
+import { getLeads } from "@/lib/api";
+import type { Lead } from "@/lib/types";
 
 export default function InscricoesPage() {
   const [leads, setLeads] = useState<Lead[] | null>(null);

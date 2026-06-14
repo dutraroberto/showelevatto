@@ -5,25 +5,31 @@ import { motion } from "framer-motion";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { LeadForm } from "@/components/landing/lead-form";
+import { ParticlesBackground } from "@/components/landing/particles-background";
 import { TicketAvailability } from "@/components/landing/ticket-availability";
 import { SuccessMessage } from "@/components/landing/success-message";
-import { getTicketsAvailable, trackPageView } from "@/lib/mock/api";
-import { TOTAL_TICKETS, type Lead } from "@/lib/mock/types";
+import { getTicketsAvailable, trackPageView } from "@/lib/api";
+import { TOTAL_TICKETS, type Lead } from "@/lib/types";
 
-export function RegistrationSection() {
+export function RegistrationSection({
+  trackPath = "/",
+}: {
+  /** Caminho registrado em page_views (permite distinguir variações da landing). */
+  trackPath?: string;
+}) {
   const [available, setAvailable] = useState<number | null>(null);
   const [registered, setRegistered] = useState<Lead | null>(null);
 
   useEffect(() => {
-    // Registro de acesso simulado (Fase 2). TODO Fase 3: insert em page_views.
-    trackPageView("/");
+    // Registra o acesso em page_views e busca a disponibilidade real.
+    trackPageView(trackPath);
     getTicketsAvailable().then(setAvailable);
-  }, []);
+  }, [trackPath]);
 
   return (
     <section
       id="inscricao"
-      className="relative z-10 scroll-mt-20 px-4 pt-20 pb-0 -mb-42 sm:mb-0 sm:pb-20"
+      className="relative z-10 -mb-42 scroll-mt-20 px-4 pt-12 pb-0 sm:mb-0 sm:pt-16 sm:pb-20"
     >
       {/* Halo dourado atrás do card de inscrição */}
       <div
@@ -34,6 +40,9 @@ export function RegistrationSection() {
             "radial-gradient(ellipse 45% 50% at 50% 55%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 70%)",
         }}
       />
+      {/* Partículas douradas flutuando atrás do formulário */}
+      <ParticlesBackground />
+
       <div className="relative mx-auto max-w-xl">
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
@@ -58,7 +67,7 @@ export function RegistrationSection() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Card className="glow-gold border-primary/20 bg-card/80 backdrop-blur">
+          <Card className="glow-gold-pulse border-primary/20 bg-card/80 backdrop-blur">
             <CardContent className="flex flex-col gap-6">
               <TicketAvailability available={available} total={TOTAL_TICKETS} />
 

@@ -1,32 +1,26 @@
-// Autenticação FAKE da Fase 1 (sem backend). Apenas o suficiente para o fluxo
-// de navegação funcionar. TODO Fase 3: trocar por Supabase Auth (@supabase/ssr).
+import { createClient } from "@/lib/supabase/client";
 
-const STORAGE_KEY = "elevatto_admin_auth";
+// Autenticação real via Supabase Auth (e-mail/senha).
+// A sessão fica em cookies (@supabase/ssr) e é validada pelo proxy.ts,
+// que protege as rotas /admin.
 
-// Credenciais de teste documentadas (Fase 1).
-export const DEMO_CREDENTIALS = {
-  email: "admin@elevatto.com",
-  password: "123456",
-};
+export async function signIn(
+  email: string,
+  password: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
 
-export function fakeSignIn(email: string, password: string): boolean {
-  // TODO Fase 3: trocar por supabase.auth.signInWithPassword.
-  const ok =
-    email.trim().toLowerCase() === DEMO_CREDENTIALS.email &&
-    password === DEMO_CREDENTIALS.password;
-  if (ok && typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, "1");
+  if (error) {
+    return { ok: false, error: error.message };
   }
-  return ok;
+  return { ok: true };
 }
 
-export function fakeSignOut(): void {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-}
-
-export function isAuthenticated(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(STORAGE_KEY) === "1";
+export async function signOut(): Promise<void> {
+  const supabase = createClient();
+  await supabase.auth.signOut();
 }

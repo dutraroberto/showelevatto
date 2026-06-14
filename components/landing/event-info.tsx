@@ -25,7 +25,7 @@ const cards = [
 
 export function EventInfo() {
   return (
-    <section className="relative px-4 py-20">
+    <section className="relative px-4 pt-20 pb-12">
       <div className="mx-auto max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
@@ -54,11 +54,12 @@ export function EventInfo() {
               whileHover="hover"
               viewport={{ once: true, margin: "-60px" }}
               variants={{
-                hidden: { opacity: 0, y: 24 },
+                hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
                 show: (index: number) => ({
                   opacity: 1,
                   y: 0,
-                  transition: { duration: 0.5, delay: index * 0.15 },
+                  filter: "blur(0px)",
+                  transition: { duration: 0.6, delay: index * 0.15 },
                 }),
                 hover: {
                   y: -6,
@@ -67,7 +68,12 @@ export function EventInfo() {
               }}
               className="group"
             >
-              <Card className="border-primary/15 bg-card/60 h-full backdrop-blur transition-[border-color,box-shadow] duration-300 hover:border-primary/40 hover:shadow-[0_12px_40px_-12px_color-mix(in_oklch,var(--primary)_35%,transparent)]">
+              <Card className="border-primary/15 bg-card/60 relative h-full overflow-hidden backdrop-blur transition-[border-color,box-shadow] duration-300 hover:border-primary/40 hover:shadow-[0_12px_40px_-12px_color-mix(in_oklch,var(--primary)_35%,transparent)]">
+                {/* Brilho que varre o card no hover */}
+                <span
+                  aria-hidden
+                  className="via-primary/10 pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+                />
                 <CardContent className="flex flex-col gap-3">
                   <span className="bg-primary/10 text-primary ring-primary/20 flex size-11 items-center justify-center rounded-xl ring-1 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                     <card.icon className="size-5" />

@@ -26,7 +26,7 @@ import {
   Avatar,
   AvatarFallback,
 } from "@/components/ui/avatar";
-import type { AdminUser } from "@/lib/mock/types";
+import type { AdminUser } from "@/lib/types";
 
 type NavItem = {
   title: string;
@@ -42,7 +42,6 @@ const navItems: NavItem[] = [
     title: "Configurações",
     href: "/admin/configuracoes",
     icon: SettingsIcon,
-    disabled: true,
   },
 ];
 
