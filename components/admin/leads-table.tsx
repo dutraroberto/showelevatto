@@ -154,7 +154,58 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border">
+      {/* Mobile: cards */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {pageRows.length === 0 ? (
+          <div className="text-muted-foreground flex flex-col items-center gap-2 rounded-xl border py-12">
+            <UsersIcon className="size-6 opacity-50" />
+            <span className="text-sm">Nenhuma inscrição encontrada.</span>
+          </div>
+        ) : (
+          pageRows.map((lead) => (
+            <div
+              key={lead.id}
+              className="bg-card flex flex-col gap-3 rounded-xl border p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{lead.name}</p>
+                  <p className="text-muted-foreground tabular-nums text-sm">
+                    {formatPhoneDisplay(lead.whatsapp)}
+                  </p>
+                </div>
+                <Badge variant="secondary" className="shrink-0">
+                  {lead.ticketQuantity}{" "}
+                  {lead.ticketQuantity === 1 ? "ingresso" : "ingressos"}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground tabular-nums text-xs">
+                  {formatDateTime(lead.createdAt)}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={
+                    <a
+                      href={buildWhatsappUrl(lead)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Falar com ${lead.name} no WhatsApp`}
+                    />
+                  }
+                >
+                  <MessageCircleIcon />
+                  WhatsApp
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop: tabela */}
+      <div className="hidden overflow-hidden rounded-xl border md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-card/50 hover:bg-card/50">
