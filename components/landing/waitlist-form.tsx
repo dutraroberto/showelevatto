@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -11,14 +11,25 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { maskPhoneBR, phoneDigits } from "@/lib/format";
 import { joinWaitlist } from "@/lib/api";
+
+const MAX_PER_WAITLIST_ENTRY = 4;
 
 const waitlistSchema = z.object({
   name: z.string().trim().min(3, "Informe seu nome completo."),
   whatsapp: z
     .string()
     .refine((v) => phoneDigits(v).length >= 10, "Informe um telefone válido."),
+  ticketQuantity: z
+    .number()
+    .int()
+    .min(1, "Selecione ao menos 1 ingresso.")
+    .max(
+      MAX_PER_WAITLIST_ENTRY,
+      `Máximo de ${MAX_PER_WAITLIST_ENTRY} ingressos por pessoa.`
+    ),
 });
 
 type WaitlistValues = z.infer<typeof waitlistSchema>;
@@ -30,11 +41,15 @@ export function WaitlistForm() {
   const {
     register,
     handleSubmit,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<WaitlistValues>({
     resolver: zodResolver(waitlistSchema),
-    defaultValues: { name: "", whatsapp: "" },
+    defaultValues: { name: "", whatsapp: "", ticketQuantity: 1 },
   });
+
+  const quantity = useWatch({ control, name: "ticketQuantity" });
 
   async function onSubmit(values: WaitlistValues) {
     setSubmitting(true);
@@ -121,6 +136,40 @@ export function WaitlistForm() {
           />
           {errors.whatsapp && (
             <p className="text-destructive text-xs">{errors.whatsapp.message}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label>Quantidade de ingressos desejada</Label>
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map((n) => {
+              const active = quantity === n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() =>
+                    setValue("ticketQuantity", n, { shouldValidate: true })
+                  }
+                  className={cn(
+                    "h-11 rounded-lg border text-sm font-semibold tabular-nums transition-all",
+                    active
+                      ? "border-primary bg-primary/15 text-primary glow-gold"
+                      : "border-border bg-card/40 hover:border-primary/40"
+                  )}
+                >
+                  {n}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Máximo de {MAX_PER_WAITLIST_ENTRY} ingressos por pessoa.
+          </p>
+          {errors.ticketQuantity && (
+            <p className="text-destructive text-xs">
+              {errors.ticketQuantity.message}
+            </p>
           )}
         </div>
 

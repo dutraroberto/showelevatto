@@ -74,6 +74,7 @@ export interface WaitlistEntry {
   id: string;
   name: string;
   whatsapp: string;
+  ticketQuantity: number;
   eventName: string;
   createdAt: string; // ISO 8601
 }
@@ -82,6 +83,7 @@ export interface WaitlistEntry {
 export interface NewWaitlistInput {
   name: string;
   whatsapp: string;
+  ticketQuantity: number;
 }
 
 /** Resultado de uma tentativa de inscrição. */

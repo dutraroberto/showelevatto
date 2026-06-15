@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   formatDateTime,
   formatPhoneDisplay,
@@ -23,16 +24,17 @@ import type { WaitlistEntry } from "@/lib/types";
 function buildWhatsappUrl(entry: WaitlistEntry): string {
   const digits = toWhatsappE164(entry.whatsapp);
   const firstName = entry.name.trim().split(" ")[0] || entry.name;
-  const message = `Olá ${firstName}! Tudo bem? Sou da organização do ${entry.eventName} e tenho novidades sobre a sua vaga na lista de espera.`;
+  const message = `Olá ${firstName}! Tudo bem? Sou da organização do ${entry.eventName} e tenho novidades sobre a sua vaga na lista de espera para ${entry.ticketQuantity} ${entry.ticketQuantity === 1 ? "ingresso" : "ingressos"}.`;
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
 
 function toCsv(entries: WaitlistEntry[]): string {
-  const header = ["Nome", "WhatsApp", "WhatsApp (intl)", "Data"];
+  const header = ["Nome", "WhatsApp", "WhatsApp (intl)", "Ingressos", "Data"];
   const rows = entries.map((e) => [
     e.name,
     formatPhoneDisplay(e.whatsapp),
     toWhatsappE164(e.whatsapp),
+    String(e.ticketQuantity),
     formatDateTime(e.createdAt),
   ]);
   return [header, ...rows]
@@ -103,6 +105,7 @@ export function WaitlistTable({ entries }: { entries: WaitlistEntry[] }) {
             <TableRow className="bg-card/50 hover:bg-card/50">
               <TableHead>Nome</TableHead>
               <TableHead>WhatsApp</TableHead>
+              <TableHead>Ingressos</TableHead>
               <TableHead className="text-right">Data</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -110,7 +113,7 @@ export function WaitlistTable({ entries }: { entries: WaitlistEntry[] }) {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-32 text-center">
+                <TableCell colSpan={5} className="h-32 text-center">
                   <div className="text-muted-foreground flex flex-col items-center gap-2">
                     <UsersIcon className="size-6 opacity-50" />
                     <span className="text-sm">
@@ -125,6 +128,9 @@ export function WaitlistTable({ entries }: { entries: WaitlistEntry[] }) {
                   <TableCell className="font-medium">{entry.name}</TableCell>
                   <TableCell className="text-muted-foreground tabular-nums">
                     {formatPhoneDisplay(entry.whatsapp)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{entry.ticketQuantity}</Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-right tabular-nums">
                     {formatDateTime(entry.createdAt)}

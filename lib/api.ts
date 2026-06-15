@@ -212,6 +212,7 @@ interface WaitlistRow {
   id: string;
   name: string;
   whatsapp: string;
+  ticket_quantity: number;
   event_name: string;
   created_at: string;
 }
@@ -222,6 +223,7 @@ export async function joinWaitlist(input: NewWaitlistInput): Promise<void> {
   const { error } = await supabase.rpc("join_waitlist", {
     p_name: input.name,
     p_whatsapp: input.whatsapp,
+    p_quantity: input.ticketQuantity,
   });
 
   if (error) throw error;
@@ -232,7 +234,7 @@ export async function getWaitlist(): Promise<WaitlistEntry[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("event_waitlist")
-    .select("id, name, whatsapp, event_name, created_at")
+    .select("id, name, whatsapp, ticket_quantity, event_name, created_at")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -240,6 +242,7 @@ export async function getWaitlist(): Promise<WaitlistEntry[]> {
     id: row.id,
     name: row.name,
     whatsapp: row.whatsapp,
+    ticketQuantity: row.ticket_quantity,
     eventName: row.event_name,
     createdAt: row.created_at,
   }));
