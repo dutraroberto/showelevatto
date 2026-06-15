@@ -40,16 +40,25 @@ function toCsv(entries: WaitlistEntry[]): string {
     .join("\n");
 }
 
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 export function WaitlistTable({ entries }: { entries: WaitlistEntry[] }) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = normalizeSearchText(query.trim());
+    const qDigits = q.replace(/\D/g, "");
     if (!q) return entries;
     return entries.filter(
       (e) =>
-        e.name.toLowerCase().includes(q) ||
-        e.whatsapp.replace(/\D/g, "").includes(q.replace(/\D/g, ""))
+        normalizeSearchText(e.name).includes(q) ||
+        normalizeSearchText(e.whatsapp).includes(q) ||
+        (qDigits.length > 0 && e.whatsapp.replace(/\D/g, "").includes(qDigits))
     );
   }, [entries, query]);
 

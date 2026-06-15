@@ -4,14 +4,20 @@ import { useEffect, useState } from "react";
 
 import { LeadsTable } from "@/components/admin/leads-table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getLeads } from "@/lib/api";
+import { getEventSettings, getLeads } from "@/lib/api";
 import type { Lead } from "@/lib/types";
 
 export default function InscricoesPage() {
   const [leads, setLeads] = useState<Lead[] | null>(null);
+  const [whatsappMessageTemplate, setWhatsappMessageTemplate] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
-    getLeads().then(setLeads);
+    Promise.all([getLeads(), getEventSettings()]).then(([leadsData, settings]) => {
+      setLeads(leadsData);
+      setWhatsappMessageTemplate(settings.whatsappMessageTemplate);
+    });
   }, []);
 
   return (
@@ -23,7 +29,7 @@ export default function InscricoesPage() {
         </p>
       </div>
 
-      {!leads ? (
+      {!leads || !whatsappMessageTemplate ? (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <Skeleton className="h-9 w-full max-w-xs" />
@@ -32,7 +38,10 @@ export default function InscricoesPage() {
           <Skeleton className="h-80 w-full rounded-xl" />
         </div>
       ) : (
-        <LeadsTable leads={leads} />
+        <LeadsTable
+          leads={leads}
+          whatsappMessageTemplate={whatsappMessageTemplate}
+        />
       )}
     </div>
   );

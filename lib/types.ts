@@ -3,6 +3,8 @@
 
 export const EVENT_NAME = "Show de 10 anos da Elevatto";
 export const TOTAL_TICKETS = 300;
+export const DEFAULT_WHATSAPP_MESSAGE_TEMPLATE =
+  "Olá {primeiro_nome}! Tudo bem? Sou da organização do {evento} e estou entrando em contato sobre a sua inscrição.";
 
 export interface Lead {
   id: string;
@@ -47,6 +49,7 @@ export interface EventSettings {
   eventName: string;
   totalTickets: number;
   maxPerLead: number;
+  whatsappMessageTemplate: string;
   ticketsReserved: number;
   ticketsAvailable: number;
 }

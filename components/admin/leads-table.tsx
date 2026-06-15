@@ -26,7 +26,7 @@ import {
   formatPhoneDisplay,
   toWhatsappE164,
 } from "@/lib/format";
-import type { Lead } from "@/lib/types";
+import { DEFAULT_WHATSAPP_MESSAGE_TEMPLATE, type Lead } from "@/lib/types";
 
 type SortKey = "createdAt" | "name" | "ticketQuantity";
 type SortDir = "asc" | "desc";
@@ -35,13 +35,17 @@ const PAGE_SIZE = 500;
 
 /**
  * Monta o link wa.me com o número no formato internacional (prefixo 55 do
- * Brasil quando ausente) e uma mensagem inicial já preenchida.
+ * Brasil quando ausente) e uma mensagem inicial já preenchida pelo template.
  */
-function buildWhatsappUrl(lead: Lead): string {
+function buildWhatsappUrl(lead: Lead, template: string): string {
   const digits = toWhatsappE164(lead.whatsapp);
 
   const firstName = lead.name.trim().split(" ")[0] || lead.name;
-  const message = `Olá ${firstName}! Tudo bem? Sou da organização do ${lead.eventName} e estou entrando em contato sobre a sua inscrição.`;
+  const message = (template.trim() || DEFAULT_WHATSAPP_MESSAGE_TEMPLATE)
+    .replaceAll("{primeiro_nome}", firstName)
+    .replaceAll("{nome}", lead.name)
+    .replaceAll("{evento}", lead.eventName)
+    .replaceAll("{ingressos}", String(lead.ticketQuantity));
 
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
@@ -62,20 +66,35 @@ function toCsv(leads: Lead[]): string {
     .join("\n");
 }
 
-export function LeadsTable({ leads }: { leads: Lead[] }) {
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+export function LeadsTable({
+  leads,
+  whatsappMessageTemplate,
+}: {
+  leads: Lead[];
+  whatsappMessageTemplate: string;
+}) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(0);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = normalizeSearchText(query.trim());
+    const qDigits = q.replace(/\D/g, "");
     const base = q
       ? leads.filter(
           (l) =>
-            l.name.toLowerCase().includes(q) ||
-            l.whatsapp.replace(/\D/g, "").includes(q.replace(/\D/g, "")) ||
-            l.whatsapp.toLowerCase().includes(q)
+            normalizeSearchText(l.name).includes(q) ||
+            normalizeSearchText(l.whatsapp).includes(q) ||
+            (qDigits.length > 0 &&
+              l.whatsapp.replace(/\D/g, "").includes(qDigits))
         )
       : leads;
 
@@ -119,14 +138,14 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
     URL.revokeObjectURL(url);
   }
 
-  const SortIcon = ({ k }: { k: SortKey }) =>
-    sortKey === k ? (
-      sortDir === "asc" ? (
-        <ArrowUpIcon className="size-3.5" />
-      ) : (
-        <ArrowDownIcon className="size-3.5" />
-      )
-    ) : null;
+  function renderSortIcon(key: SortKey) {
+    if (sortKey !== key) return null;
+    return sortDir === "asc" ? (
+      <ArrowUpIcon className="size-3.5" />
+    ) : (
+      <ArrowDownIcon className="size-3.5" />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -188,7 +207,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   size="sm"
                   render={
                     <a
-                      href={buildWhatsappUrl(lead)}
+                      href={buildWhatsappUrl(lead, whatsappMessageTemplate)}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`Falar com ${lead.name} no WhatsApp`}
@@ -215,7 +234,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   onClick={() => toggleSort("name")}
                   className="hover:text-foreground inline-flex items-center gap-1"
                 >
-                  Nome <SortIcon k="name" />
+                  Nome {renderSortIcon("name")}
                 </button>
               </TableHead>
               <TableHead>WhatsApp</TableHead>
@@ -225,7 +244,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   onClick={() => toggleSort("ticketQuantity")}
                   className="hover:text-foreground inline-flex items-center gap-1"
                 >
-                  Ingressos <SortIcon k="ticketQuantity" />
+                  Ingressos {renderSortIcon("ticketQuantity")}
                 </button>
               </TableHead>
               <TableHead className="text-right">
@@ -234,7 +253,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                   onClick={() => toggleSort("createdAt")}
                   className="hover:text-foreground ml-auto inline-flex items-center gap-1"
                 >
-                  Data <SortIcon k="createdAt" />
+                  Data {renderSortIcon("createdAt")}
                 </button>
               </TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -271,7 +290,7 @@ export function LeadsTable({ leads }: { leads: Lead[] }) {
                       size="sm"
                       render={
                         <a
-                          href={buildWhatsappUrl(lead)}
+                          href={buildWhatsappUrl(lead, whatsappMessageTemplate)}
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label={`Falar com ${lead.name} no WhatsApp`}

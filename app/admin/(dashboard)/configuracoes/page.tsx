@@ -7,6 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import {
   Loader2Icon,
+  MessageCircleIcon,
   SaveIcon,
   TicketCheckIcon,
   TicketIcon,
@@ -24,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getEventSettings, updateTotalTickets } from "@/lib/api";
+import { getEventSettings, updateEventSettings } from "@/lib/api";
 import type { EventSettings } from "@/lib/types";
 import { formatNumber } from "@/lib/format";
 
@@ -33,6 +34,11 @@ const settingsSchema = z.object({
     .number({ message: "Informe um número válido." })
     .int("Use um número inteiro.")
     .min(1, "O total deve ser de pelo menos 1 ingresso."),
+  whatsappMessageTemplate: z
+    .string()
+    .trim()
+    .min(1, "Informe a mensagem padrão do WhatsApp.")
+    .max(1000, "Use no máximo 1000 caracteres."),
 });
 
 type SettingsValues = z.infer<typeof settingsSchema>;
@@ -54,7 +60,10 @@ export default function ConfiguracoesPage() {
     getEventSettings()
       .then((data) => {
         setSettings(data);
-        reset({ totalTickets: data.totalTickets });
+        reset({
+          totalTickets: data.totalTickets,
+          whatsappMessageTemplate: data.whatsappMessageTemplate,
+        });
       })
       .catch(() => {
         toast.error("Não foi possível carregar as configurações.");
@@ -73,13 +82,14 @@ export default function ConfiguracoesPage() {
 
     setSubmitting(true);
     try {
-      const updated = await updateTotalTickets(values.totalTickets);
+      const updated = await updateEventSettings(values);
       setSettings(updated);
-      reset({ totalTickets: updated.totalTickets });
+      reset({
+        totalTickets: updated.totalTickets,
+        whatsappMessageTemplate: updated.whatsappMessageTemplate,
+      });
       toast.success("Configurações salvas", {
-        description: `Total de ingressos atualizado para ${formatNumber(
-          updated.totalTickets
-        )}.`,
+        description: "As configurações do evento foram atualizadas.",
       });
     } catch (error) {
       toast.error("Não foi possível salvar", {
@@ -98,7 +108,7 @@ export default function ConfiguracoesPage() {
       <div>
         <h2 className="text-lg font-semibold">Configurações do evento</h2>
         <p className="text-muted-foreground text-sm">
-          Ajuste a capacidade de ingressos do evento.
+          Ajuste a capacidade de ingressos e a mensagem padrão do WhatsApp.
         </p>
       </div>
 
@@ -163,6 +173,69 @@ export default function ConfiguracoesPage() {
                     <p className="text-muted-foreground text-xs">
                       Mínimo: {formatNumber(settings.ticketsReserved || 1)}{" "}
                       (ingressos já reservados).
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={submitting}
+                    className="h-10 font-semibold"
+                  >
+                    {submitting ? (
+                      <Loader2Icon className="animate-spin" />
+                    ) : (
+                      <SaveIcon />
+                    )}
+                    {submitting ? "Salvando..." : "Salvar alterações"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MessageCircleIcon className="size-4" />
+                Mensagem padrão do WhatsApp
+              </CardTitle>
+              <CardDescription>
+                Texto usado no botão de WhatsApp da listagem de inscrições.
+                Variáveis disponíveis:{" "}
+                <span className="text-foreground font-medium">
+                  {"{primeiro_nome}"}, {"{nome}"}, {"{evento}"} e{" "}
+                  {"{ingressos}"}
+                </span>
+                .
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-5"
+              >
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="whatsappMessageTemplate">
+                    Mensagem do WhatsApp
+                  </Label>
+                  <textarea
+                    id="whatsappMessageTemplate"
+                    rows={5}
+                    className="border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 min-h-28 w-full resize-y rounded-lg border bg-transparent px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-3 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-invalid={!!errors.whatsappMessageTemplate}
+                    {...register("whatsappMessageTemplate")}
+                  />
+                  {errors.whatsappMessageTemplate ? (
+                    <p className="text-destructive text-xs">
+                      {errors.whatsappMessageTemplate.message}
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-xs">
+                      A mensagem será preenchida automaticamente para cada
+                      inscrição.
                     </p>
                   )}
                 </div>

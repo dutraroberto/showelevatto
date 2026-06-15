@@ -122,6 +122,7 @@ interface EventSettingsRow {
   event_name: string;
   total_tickets: number;
   max_per_lead: number;
+  whatsapp_message_template: string;
   tickets_reserved: number;
   tickets_available: number;
 }
@@ -131,6 +132,7 @@ function rowToEventSettings(row: EventSettingsRow): EventSettings {
     eventName: row.event_name,
     totalTickets: row.total_tickets,
     maxPerLead: row.max_per_lead,
+    whatsappMessageTemplate: row.whatsapp_message_template,
     ticketsReserved: row.tickets_reserved,
     ticketsAvailable: row.tickets_available,
   };
@@ -146,15 +148,17 @@ export async function getEventSettings(): Promise<EventSettings> {
 }
 
 /**
- * Altera a quantidade total de ingressos do evento (RPC admin-only). O banco
- * recusa um total menor que os ingressos já reservados.
+ * Altera configurações do evento (RPC admin-only). O banco recusa um total
+ * menor que os ingressos já reservados.
  */
-export async function updateTotalTickets(
-  totalTickets: number
-): Promise<EventSettings> {
+export async function updateEventSettings(input: {
+  totalTickets: number;
+  whatsappMessageTemplate: string;
+}): Promise<EventSettings> {
   const supabase = createClient();
   const { data, error } = await supabase.rpc("update_event_settings", {
-    p_total_tickets: totalTickets,
+    p_total_tickets: input.totalTickets,
+    p_whatsapp_message_template: input.whatsappMessageTemplate,
   });
 
   if (error) throw error;

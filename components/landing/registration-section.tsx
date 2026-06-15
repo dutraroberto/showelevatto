@@ -10,7 +10,7 @@ import { ParticlesBackground } from "@/components/landing/particles-background";
 import { TicketAvailability } from "@/components/landing/ticket-availability";
 import { SuccessMessage } from "@/components/landing/success-message";
 import { getTicketsAvailable, trackPageView } from "@/lib/api";
-import { TOTAL_TICKETS, type Lead } from "@/lib/types";
+import type { Lead } from "@/lib/types";
 
 export function RegistrationSection({
   trackPath = "/",
@@ -82,7 +82,7 @@ export function RegistrationSection({
         >
           <Card className="glow-gold-pulse border-primary/20 bg-card/80 backdrop-blur">
             <CardContent className="flex flex-col gap-6">
-              <TicketAvailability available={available} total={TOTAL_TICKETS} />
+              <TicketAvailability available={available} />
 
               {registered ? (
                 <SuccessMessage

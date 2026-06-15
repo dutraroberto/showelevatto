@@ -4,11 +4,12 @@ import { TicketIcon } from "lucide-react";
 
 interface TicketAvailabilityProps {
   available: number | null;
-  total: number;
 }
 
 export function TicketAvailability({ available }: TicketAvailabilityProps) {
   const soldOut = available === 0;
+
+  if (available !== null && !soldOut) return null;
 
   return (
     <div className="border-primary/15 bg-card/40 rounded-xl border p-4">
@@ -16,9 +17,7 @@ export function TicketAvailability({ available }: TicketAvailabilityProps) {
         <TicketIcon className="text-primary size-4" />
         {available === null
           ? "Verificando disponibilidade..."
-          : soldOut
-            ? "Ingressos esgotados"
-            : "🔥 Mais de 150 inscrições realizadas"}
+          : "Ingressos esgotados"}
       </span>
     </div>
   );
